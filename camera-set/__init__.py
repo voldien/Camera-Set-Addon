@@ -12,17 +12,15 @@ bl_info = {
 
 if "bpy" in locals():
 	import importlib
+	if "Panel" in locals():
+		importlib.reload(Panel)
+	if "operator" in locals():
+		importlib.reload(operator)
+	if "translations" in locals():
+		importlib.reload(translations)
 
-	importlib.reload(operator)
-	importlib.reload(Panel)
-	importlib.reload(translations)
 
-else:
-	from . import (
-		operator,
-		Panel,
-		translations,
-	)
+from . import operator, Panel, translations
 
 import bpy
 from bpy.props import (
@@ -33,6 +31,7 @@ from bpy.props import (
 	IntProperty
 )
 
+
 class RenderCameraSetSceneSettings(bpy.types.PropertyGroup):
 	#
 	allowed = BoolProperty(default=True)
@@ -40,8 +39,8 @@ class RenderCameraSetSceneSettings(bpy.types.PropertyGroup):
 
 class RenderCameraData(bpy.types.PropertyGroup):
 	#
-	camera = PointerProperty(name="camera", type=bpy.types.Object, description="")#,
-	#update=scene..classes.CameraRenderQueueSet.draw)
+	camera = PointerProperty(name="camera", type=bpy.types.Object, description="")  # ,
+	# update=scene..classes.CameraRenderQueueSet.draw)
 	filepath = StringProperty(name="filepath", description="")
 	enabled = BoolProperty(name="enabled", default=True, description="")
 	affected_settings_idx = IntProperty()
@@ -54,6 +53,7 @@ class RenderCameraSetSettings(bpy.types.PropertyGroup):
 	affected_settings_idx = IntProperty()
 	pattern = BoolProperty(name="pattern", description="", default=False)
 	render = BoolProperty(name="render", description="", default=False)
+	output_directory = StringProperty(name="Output Directory", description="", default="")
 
 
 classes = (
@@ -65,19 +65,24 @@ addon_keymaps = []
 
 
 def menu_func_render(self, context):
-	self.layout.operator("scene.render_camera_set", text="Camera Render Set")
+	self.layout.operator("scene.render_camera_set", text="Render Camera Set")
 
 
 def register():
 	for cls in classes:
 		bpy.utils.register_class(cls)
 
-	#	bpy.app.handlers.version_update.append(version_update.do_versions)
-
 	bpy.types.Scene.render_camera_set_settings = PointerProperty(type=RenderCameraSetSettings)
 
-	bpy.types.RENDER_PT_render.append(menu_func_render)
-	#bpy.app.handlers.scene_update_post.append(on_scene_update)
+	# Create menus.
+	if bpy.app.version >= (2, 80, 0):
+		bpy.types.RENDER_PT_render.append(menu_func_render)
+		bpy.types.TOPBAR_MT_render.append(menu_func_render)
+	else:
+		bpy.types.RENDER_PT_render.append(menu_func_render)
+		bpy.types.INFO_MT_render.append(menu_func_render)
+
+	# bpy.app.handlers.scene_update_post.append(on_scene_update)
 	#	bpy.app.handlers.render_post.append()
 
 	# add keymap default entries
@@ -86,9 +91,9 @@ def register():
 		km = kcfg.keymaps.new(name='Screen', space_type='EMPTY')
 		kmi = km.keymap_items.new("scene.render_camera_set", 'F12', 'PRESS', ctrl=True, shift=True)
 		addon_keymaps.append((km, kmi))
-		kmi = km.keymap_items.new("scene.render_camera_select", 'J', 'PRESS', ctrl=True, shift=True)
+		kmi = km.keymap_items.new("scene.render_camera_set_select", 'J', 'PRESS', ctrl=True, shift=True)
 		addon_keymaps.append((km, kmi))
-		kmi = km.keymap_items.new("scene.render_camera_deselect", 'I', 'PRESS', ctrl=True, shift=True)
+		kmi = km.keymap_items.new("scene.render_camera_set_deselect", 'I', 'PRESS', ctrl=True, shift=True)
 		addon_keymaps.append((km, kmi))
 
 	bpy.app.translations.register(__name__, translations.translations_dict)
@@ -103,14 +108,15 @@ def unregister():
 	addon_keymaps.clear()
 
 	# Remove layouts.
-	bpy.types.RENDER_PT_render.remove(menu_func_render)
+	if bpy.app.version >= (2, 80, 0):
+		bpy.types.RENDER_PT_render.remove(menu_func_render)
+		bpy.types.TOPBAR_MT_render.remove(menu_func_render)
+	else:
+		bpy.types.RENDER_PT_render.remove(menu_func_render)
+		bpy.types.INFO_MT_render.remove(menu_func_render)
 
 	# Delete pointer of the camera set.
-	del bpy.types.Scene.render_camera_set
+	del bpy.types.Scene.render_camera_set_settings
 	# unregister the class.
-	for cls in classes:
+	for cls in classes[::-1]:
 		bpy.utils.unregister_class(cls)
-
-
-if __name__ == "__main__":
-	register()
