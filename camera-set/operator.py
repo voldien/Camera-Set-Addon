@@ -188,7 +188,7 @@ class RenderCameraSet(Operator):
 	bl_idname = "scene.render_camera_set"
 	bl_label = "Render Camera Set"
 	bl_description = "Render all camera in the camera set."
-	bl_options = {'REGISTER', 'UNDO'}
+	bl_options = {'REGISTER'}
 
 	# Perform rendering
 	def execute(self, context):

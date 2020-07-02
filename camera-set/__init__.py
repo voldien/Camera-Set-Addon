@@ -43,6 +43,7 @@ class OverrideRenderSetting(RenderSettings):
 
 class RenderCameraData(bpy.types.PropertyGroup):
 	#
+	name = StringProperty(name="name", default="", description="")
 	camera = PointerProperty(name="camera", type=bpy.types.Object, description="")  # ,
 	# update=scene..classes.CameraRenderQueueSet.draw)
 	filepath = StringProperty(
@@ -70,7 +71,7 @@ class RenderCameraSetSettings(bpy.types.PropertyGroup):
 
 
 classes = (
-	          RenderCameraSetSceneSettings,
+	          #RenderCameraSetSceneSettings,
 	          RenderCameraData,
 	          RenderCameraSetSettings
           ) + operator.classes + Panel.classes
