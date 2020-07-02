@@ -1,3 +1,5 @@
+
+
 bl_info = {
 	"name": "Camera Render Set",
 	"author": "Valdemar Lindberg",
@@ -9,7 +11,7 @@ bl_info = {
 	"wiki_url": "",
 	"category": "Render",
 }
-
+import bpy
 if "bpy" in locals():
 	import importlib
 	if "Panel" in locals():
@@ -21,8 +23,6 @@ if "bpy" in locals():
 
 
 from . import operator, Panel, translations
-
-import bpy
 from bpy.props import (
 	BoolProperty,
 	CollectionProperty,
@@ -32,19 +32,28 @@ from bpy.props import (
 )
 
 
+from bpy.types import RenderSettings
 class RenderCameraSetSceneSettings(bpy.types.PropertyGroup):
 	#
 	allowed = BoolProperty(default=True)
 
 
+class OverrideRenderSetting(RenderSettings):
+	pass	
+
 class RenderCameraData(bpy.types.PropertyGroup):
 	#
 	camera = PointerProperty(name="camera", type=bpy.types.Object, description="")  # ,
 	# update=scene..classes.CameraRenderQueueSet.draw)
-	filepath = StringProperty(name="filepath", description="")
+	filepath = StringProperty(
+		name="filepath", default="'*.jpg;*.jpeg;*.png;*.tif;*.tiff;*.bmp'", options={'HIDDEN'})
 	enabled = BoolProperty(name="enabled", default=True, description="")
 	affected_settings_idx = IntProperty()
-
+	override_rendering_setting = BoolProperty(
+		name="Override Rendering Setting", description="")
+	render_setting = PointerProperty(
+		name="RenderSetting", description="", type=bpy.types.CyclesRenderSettings)
+	#data = RenderSettings()
 
 class RenderCameraSetSettings(bpy.types.PropertyGroup):
 	#
@@ -54,6 +63,10 @@ class RenderCameraSetSettings(bpy.types.PropertyGroup):
 	pattern = BoolProperty(name="pattern", description="", default=False)
 	render = BoolProperty(name="render", description="", default=False)
 	output_directory = StringProperty(name="Output Directory", description="", default="")
+	use_default_output_directory = BoolProperty(
+		"Default Output", description="", default=True)
+	enabled = BoolProperty(name="Enabled", description="", default=False)
+
 
 
 classes = (
@@ -65,7 +78,9 @@ addon_keymaps = []
 
 
 def menu_func_render(self, context):
-	self.layout.operator("scene.render_camera_set", text="Render Camera Set")
+	camera_sett = context.scene.render_camera_set_settings
+	if camera_sett.enabled:
+		self.layout.operator("scene.render_camera_set", text="Render Camera Set")
 
 
 def register():
@@ -120,3 +135,6 @@ def unregister():
 	# unregister the class.
 	for cls in classes[::-1]:
 		bpy.utils.unregister_class(cls)
+
+if __name__ == "__main__":
+    register()
