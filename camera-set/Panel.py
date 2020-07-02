@@ -12,7 +12,7 @@ class RENDER_UL_camera_settings(UIList):
 	bl_label = "Camera List"
 	bl_options = {'HIDE_HEADER'}
 	def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
-		assert(isinstance(item, bpy.types.RenderCameraData))
+#		assert(isinstance(item, RenderCameraData))
 
 		cameraData = item
 		if self.layout_type in {'DEFAULT', 'COMPACT'}:
@@ -68,7 +68,7 @@ class CameraRenderQueueSet(Panel):
 		global_layout.label("Global Settings")
 
 		output_row_layout = global_layout.column()
-		output_row_layout.prop(camera_sett, "output_directory", icon='FILESEL')
+		output_row_layout.prop(camera_sett, "output_directory")
 		#output_row_layout.
 		output_row_layout.prop(camera_sett, "use_default_output_directory")
 		output_row_layout.prop(camera_sett, "pattern")
@@ -87,7 +87,7 @@ class CameraRenderQueueSet(Panel):
 		sub = col.column(align=True)
 		sub.operator("scene.render_camera_set_select", icon='ZOOMIN', text="")
 		sub.operator("scene.render_camera_set_deselect", icon='ZOOMOUT', text="")
-		col.prop(camera_sett, "use_single_layer", icon_only=True)
+		#col.prop(camera_sett, "use_single_layer", icon_only=True)
 		
 		#
 		# layout.enabled = len(camera_sett.cameras) > 0
@@ -110,7 +110,7 @@ class CameraRenderQueueSet(Panel):
 #        image_settings = rd.image_settings
 			layout.prop(cameraData, property="enaled", text="Enabled")
 			layout.prop(cameraData, property="camera", text="Camera")
-			layout.label(str.format("Output Settings {}", cameraData.camera.name))
+			layout.label(str.format("Output"))
 			layout.prop(cameraData, property="filepath", text="")
 #			layout.template_image_settings(image_settings, color_management=False)
 #		        layout.template_image_settings(

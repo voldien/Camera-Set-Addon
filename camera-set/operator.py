@@ -218,13 +218,15 @@ class RenderCameraSet(Operator):
 						current_scene.camera = set.camera
 						if not camera_set_settings.use_default_output_directory:
 							current_scene.render.filepath = str.format("{}/{}", camera_set_settings.output_directory, set.filepath)
-
+						else:
+							current_scene.render.filepath = str.format(
+								"{}/{}", current_scene.render.filepath, set.filepath)
 						# Use overrided rendering settings.
-						if set.override_rendering_settings:
-							if current_scene.render.engine == "CYCLE":
-								pass
-							else:
-								pass
+						# if set.override_rendering_settings:
+						# 	if current_scene.render.engine == "CYCLE":
+						# 		pass
+						# 	else:
+						# 		pass
 							#set.data = rendersettings_properties.copy()
 
 
@@ -235,8 +237,12 @@ class RenderCameraSet(Operator):
 						#bpy.ops.render.view_show('INVOKE_DEFAULT')
 						bpy.ops.render.render('INVOKE_DEFAULT', use_viewport=True, write_still=True)
 						bpy.data.images['Render Result'].render_slots.active_index = i
-			except:
-				pass
+
+						bpy.ops.image.open(
+							filepath=bpy.path.basename(
+								(current_scene.render.filepath), directory=current_scene.render.filepath, show_multiview=False)
+			except Exception as inst:
+				self.report({'ERROR'}, str(inst))
 	#			bpy.data.
 			finally:
 				# -------------------------

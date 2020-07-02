@@ -45,16 +45,14 @@ class RenderCameraData(bpy.types.PropertyGroup):
 	#
 	name = StringProperty(name="name", default="", description="")
 	camera = PointerProperty(name="camera", type=bpy.types.Object, description="")  # ,
-	# update=scene..classes.CameraRenderQueueSet.draw)
 	filepath = StringProperty(
-		name="filepath", default="'*.jpg;*.jpeg;*.png;*.tif;*.tiff;*.bmp'", options={'HIDDEN'})
+		name="filepath", default='', subtype='FILE_PATH')
 	enabled = BoolProperty(name="enabled", default=True, description="")
-	affected_settings_idx = IntProperty()
 	override_rendering_setting = BoolProperty(
-		name="Override Rendering Setting", description="")
+            name="Override Rendering Setting", description="")
 	render_setting = PointerProperty(
 		name="RenderSetting", description="", type=bpy.types.CyclesRenderSettings)
-	#data = RenderSettings()
+	affected_settings_idx = IntProperty()
 
 class RenderCameraSetSettings(bpy.types.PropertyGroup):
 	#
@@ -63,7 +61,8 @@ class RenderCameraSetSettings(bpy.types.PropertyGroup):
 	affected_settings_idx = IntProperty()
 	pattern = BoolProperty(name="pattern", description="", default=False)
 	render = BoolProperty(name="render", description="", default=False)
-	output_directory = StringProperty(name="Output Directory", description="", default="")
+	output_directory = StringProperty(
+		name="Output Directory", description="", default="", subtype='DIR_PATH')
 	use_default_output_directory = BoolProperty(
 		"Default Output", description="", default=True)
 	enabled = BoolProperty(name="Enabled", description="", default=False)
