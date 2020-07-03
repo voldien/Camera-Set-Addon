@@ -16,17 +16,16 @@ class RENDER_UL_camera_settings(UIList):
 
 		cameraData = item
 		if self.layout_type in {'DEFAULT', 'COMPACT'}:
-		
+			display_name = str.format("{} ({}}", cameraData.name, cameraData.camera.name)
 			layout.prop(cameraData, "name", icon_value=icon, icon='CAMERA_DATA', emboss=False, text="")
 			layout.prop(cameraData, "enabled", index=index, text="")
 		elif self.layout_type in {'GRID'}:
 			layout.alignment = 'CENTER'
 			layout.label("", icon_value=icon)
 
-
-def seListIndexFunction(self, value):
-	bpy.ops.generate_markers.change_marker()
-
+class CameraSetPanel:
+	bl_space_type = 'PROPERTIES'
+	bl_region_type = 'WINDOW'
 
 # class RenderCameaSetButtonsPanel:
 #     bl_space_type = 'PROPERTIES'
@@ -43,9 +42,8 @@ class CameraRenderQueueSet(Panel):
 	bl_label = "Camera Render Set"
 	bl_space_type = "PROPERTIES"
 	bl_region_type = "WINDOW"
-	#bl_category = "Rendering"
+	bl_category = "Rendering"
 	bl_context = "scene"
-	#bl_options = {'DEFAULT_CLOSED'}
 
 	@classmethod
 	def poll(cls, context):
@@ -61,7 +59,6 @@ class CameraRenderQueueSet(Panel):
 		# Get camera settings.
 		camera_sett = context.scene.render_camera_set_settings
 		layout.active = camera_sett.enabled
-
 
 		global_layout = layout
 		global_layout.alignment = 'LEFT'
@@ -82,7 +79,7 @@ class CameraRenderQueueSet(Panel):
 		col = row.column()
 		
 		col.template_list("RENDER_UL_camera_settings", "settings", camera_sett, "cameras",
-		                    camera_sett, "affected_settings_idx", rows=6)
+		                    camera_sett, "affected_settings_idx", rows=3)
 		col = row.column()
 		sub = col.column(align=True)
 		sub.operator("scene.render_camera_set_select", icon='ZOOMIN', text="")
@@ -92,18 +89,15 @@ class CameraRenderQueueSet(Panel):
 		#
 		# layout.enabled = len(camera_sett.cameras) > 0
 		# layout.operator("scene.render_camera_set", text="Camera Render Set")
-		layout.enabled = True
 		col = layout.split(0.5)
 		col.operator("scene.render_camera_set_select", text="Add Camera")
 		col.operator("scene.render_camera_set_deselect", text="Remove Camera")
-#layout.template_image_settings(image_settings, color_management=False)
-		#
-		layout.separator()
 
-		layout.enabled = len(camera_sett.cameras) > 0
-		layout.label("Camera Setting")
-		# 
+		# Display camera target settings.
 		if len(camera_sett.cameras) > 0 and camera_sett.affected_settings_idx >= 0:
+			layout.separator()
+			layout.enabled = len(camera_sett.cameras) > 0
+			layout.label("Camera Setting")
 			#split = layout.split(0.9)
 			cameraData = camera_sett.cameras[camera_sett.affected_settings_idx]
 #		        file_format = image_settings.file_format
@@ -112,38 +106,7 @@ class CameraRenderQueueSet(Panel):
 			layout.prop(cameraData, property="camera", text="Camera")
 			layout.label(str.format("Output"))
 			layout.prop(cameraData, property="filepath", text="")
-#			layout.template_image_settings(image_settings, color_management=False)
-#		        layout.template_image_settings(
-#		        	image_settings, color_management=False)
-			#bpy.ops.buttons.file_browse()
-		# bpy.ops.buttons.file_browse()
-		layout.enabled = True
-		#			split.prop
-
-		#		split.prop(camera_sett, )
-
-		#
-		col = layout.row()
-		col.prop(camera_sett, "pattern")
-		col.prop(camera_sett, "render")
-
-# all_set = {sett.strid for sett in cp_sett.affected_settings if sett.copy}
-# for p in preset.presets:
-# 	label = ""
-# 	if p.elements & all_set == p.elements:
-# 		label = "Clear {}".format(p.ui_name)
-# 	else:
-# 		label = "Set {}".format(p.ui_name)
-# 	col.operator("scene.render_camera_option", text=label).presets = {p.rna_enum[0]}
-
-# layout.prop(cp_sett, "filter_scene")
-# if len(cp_sett.allowed_scenes):
-# 	layout.label("Camera Scenes:")
-# 	layout.template_list("RENDER_UL_camera_settings", "scenes", cp_sett, "allowed_scenes",
-# 	                     #                                 cp_sett, "allowed_scenes_idx", rows=6, type='GRID')
-# 	                     cp_sett, "allowed_scenes_idx", rows=6)  # XXX Grid is not nice currently...
-# else:
-# 	layout.label(text="No Affectable Scenes!", icon="ERROR")
+			layout.prop(cameraData, property="override_rendering_setting")
 
 
 classes = (

@@ -71,17 +71,18 @@ from . import preset
 
 def valid_poll_object(objects):
 	for o in objects:
-		if o.type != 'CAMERA':
+		if valid_camera_object(o):
 			return False
 	return True
-
 
 def valid_camera_object(obj):
 	return obj.type != 'CAMERA'
 
 def check_object_in_set(camera_set_sett, selected_objects):
-	pass
-
+	for camera_set in camera_set_sett:
+		if camera_set == selected_object:
+			return True
+	return False
 
 class RenderCameraDesetSelect(bpy.types.Operator):
 	"""Apply some presets of render settings to copy to other scenes"""
@@ -89,8 +90,6 @@ class RenderCameraDesetSelect(bpy.types.Operator):
 	bl_label = "Render: Remove selected camera"
 	bl_description = ""
 	bl_option = {'REGISTER', 'UNDO'}
-
-	# object = bpy.props.PointerProperty(type=bpy.types.Object)
 
 	@classmethod
 	def poll(cls, context):
@@ -214,6 +213,11 @@ class RenderCameraSet(Operator):
 			try:
 				for i, set in enumerate(camera_set_settings.cameras):
 					if set.enabled and set.camera is not None and not set.camera.hide_render:
+
+						path_dir = ""
+						path_filename = ""
+						full_path = ""
+
 						# Override rendering settings.
 						current_scene.camera = set.camera
 						if not camera_set_settings.use_default_output_directory:
@@ -243,7 +247,6 @@ class RenderCameraSet(Operator):
 								(current_scene.render.filepath), directory=current_scene.render.filepath, show_multiview=False)
 			except Exception as inst:
 				self.report({'ERROR'}, str(inst))
-	#			bpy.data.
 			finally:
 				# -------------------------
 				# Reset the configuration.
@@ -267,7 +270,6 @@ class RenderCameraSet(Operator):
 
 	@classmethod
 	def poll(cls, context):
-
 
 		return context.scene is not None and len(context.scene.render_camera_set_settings.cameras) > 0
 
