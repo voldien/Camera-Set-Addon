@@ -13,4 +13,5 @@ thirdparty/* linguist-vendored
 *.ico binary
 *.png binary
 *.ttf binary
-
+*.blend binary
+*.kra binary
