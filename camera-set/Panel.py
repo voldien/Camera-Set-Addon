@@ -1,3 +1,4 @@
+# <pep8 compliant>
 import bpy
 if "bpy" in locals():
 	import importlib
@@ -8,7 +9,7 @@ from . import preset
 
 from bpy.types import Panel, UIList
 
-class RENDER_UL_camera_settings(UIList):
+class SCENE_UL_camera_settings(UIList):
 	bl_label = "Camera List"
 	bl_options = {'HIDE_HEADER'}
 	def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
@@ -16,7 +17,10 @@ class RENDER_UL_camera_settings(UIList):
 
 		cameraData = item
 		if self.layout_type in {'DEFAULT', 'COMPACT'}:
-			display_name = str.format("{} ({}}", cameraData.name, cameraData.camera.name)
+			display_name =""
+			if cameraData.camera:
+				display_name = str.format(
+					"{} ({})", cameraData.name, cameraData.camera.name)
 			layout.prop(cameraData, "name", icon_value=icon, icon='CAMERA_DATA', emboss=False, text="")
 			layout.prop(cameraData, "enabled", index=index, text="")
 		elif self.layout_type in {'GRID'}:
@@ -24,30 +28,18 @@ class RENDER_UL_camera_settings(UIList):
 			layout.label("", icon_value=icon)
 
 class CameraSetPanel:
-	bl_space_type = 'PROPERTIES'
+	bl_space_type = 'PROPERTIES'	
 	bl_region_type = 'WINDOW'
-
-# class RenderCameaSetButtonsPanel:
-#     bl_space_type = 'PROPERTIES'
-#     bl_region_type = 'WINDOW'
-#     bl_context = "render_layer"
-#     # COMPAT_ENGINES must be defined in each subclass, external engines can add themselves here
-
-#     @classmethod
-#     def poll(cls, context):
-#         scene = context.scene
-#         return scene and (scene.render.engine in cls.COMPAT_ENGINES)
-
-class CameraRenderQueueSet(Panel):
-	bl_label = "Camera Render Set"
-	bl_space_type = "PROPERTIES"
-	bl_region_type = "WINDOW"
-	bl_category = "Rendering"
-	bl_context = "scene"
-
 	@classmethod
 	def poll(cls, context):
-		return context.scene is not None
+		scene = context.scene
+		return scene and context.scene.render_camera_set_settings
+
+
+class SCENE_PT_cameraset(Panel, CameraSetPanel):
+	bl_label = "Camera Render Set"
+	bl_category = "Rendering"
+	bl_context = "scene"
 
 	def draw_header(self, context):
 		camera_sett = context.scene.render_camera_set_settings
@@ -78,7 +70,7 @@ class CameraRenderQueueSet(Panel):
 		row = layout.row()
 		col = row.column()
 		
-		col.template_list("RENDER_UL_camera_settings", "settings", camera_sett, "cameras",
+		col.template_list("SCENE_UL_camera_settings", "settings", camera_sett, "cameras",
 		                    camera_sett, "affected_settings_idx", rows=3)
 		col = row.column()
 		sub = col.column(align=True)
@@ -102,14 +94,16 @@ class CameraRenderQueueSet(Panel):
 			cameraData = camera_sett.cameras[camera_sett.affected_settings_idx]
 #		        file_format = image_settings.file_format
 #        image_settings = rd.image_settings
-			layout.prop(cameraData, property="enaled", text="Enabled")
+			layout.prop(cameraData, property="enabled", text="Enabled")
 			layout.prop(cameraData, property="camera", text="Camera")
 			layout.label(str.format("Output"))
 			layout.prop(cameraData, property="filepath", text="")
 			layout.prop(cameraData, property="override_rendering_setting")
+			# layout.template_image_settings(
+			# 	cameraData.image_settings, color_management=False)
 
 
 classes = (
-	CameraRenderQueueSet,
-	RENDER_UL_camera_settings
+	SCENE_PT_cameraset,
+	SCENE_UL_camera_settings
 )

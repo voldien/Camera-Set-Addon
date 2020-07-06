@@ -32,7 +32,7 @@ from bpy.props import (
 )
 
 
-from bpy.types import RenderSettings
+from bpy.types import RenderSettings, ImageFormatSettings
 class RenderCameraSetSceneSettings(bpy.types.PropertyGroup):
 	#
 	allowed = BoolProperty(default=True)
@@ -68,6 +68,7 @@ class RenderCameraSetSettings(bpy.types.PropertyGroup):
 	use_default_output_directory = BoolProperty(
 		"Default Output", description="", default=True)
 	enabled = BoolProperty(name="Enabled", description="", default=False)
+
 
 classes = (
 	          #RenderCameraSetSceneSettings,
