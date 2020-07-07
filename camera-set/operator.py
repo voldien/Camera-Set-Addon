@@ -19,41 +19,6 @@ if "bpy" in locals():
 from . import preset
 from bpy.types import RenderSettings, ImageFormatSettings
 
-# class RenderCopySettingsOPPreset(bpy.types.Operator):
-#     """Apply some presets of render settings to copy to other scenes"""
-#     bl_idname = "scene.render_copy_settings_preset"
-#     bl_label = "Render: Copy Settings Preset"
-#     bl_description = "Apply or clear this preset of render settings"
-#     # Enable undo…
-#     bl_option = {'REGISTER', 'UNDO'}
-#
-#     presets = EnumProperty(items=(p.rna_enum for p in presets.presets),
-#                            default=set(),
-#                            options={'ENUM_FLAG'})
-#
-#     @staticmethod
-#     def process_elements(settings, elts):
-#         setts = []
-#         val = True
-#         for sett in settings:
-#             if sett.strid in elts:
-#                 setts.append(sett)
-#                 val = val and sett.copy
-#         for e in setts:
-#             e.copy = not val
-#
-#     @classmethod
-#     def poll(cls, context):
-#         return context.scene is not None
-#
-#     def execute(self, context):
-#         cp_sett = context.scene.render_copy_settings
-#         for p in presets.presets:
-#             if p.rna_enum[0] in self.presets:
-#                 self.process_elements(cp_sett.affected_settings, p.elements)
-#         return {'FINISHED'}
-#
-#
 # # Real interesting stuff…
 #
 # def do_copy(context, affected_settings, allowed_scenes):
@@ -98,6 +63,10 @@ class RenderCameraBase:
 		and cls.valid_poll_object(bpy.context.selected_objects) \
 		and len(bpy.context.selected_objects) > 0
 
+	@classmethod
+	def addDefaultCameraElement(cls, camera_setting):
+		pass
+
 
 class RenderCameraDesetSelect(Operator, RenderCameraBase):
 	bl_idname = "scene.render_camera_set_deselect"
@@ -122,7 +91,6 @@ class RenderCameraSetSelect(Operator, RenderCameraBase):
 	bl_idname = "scene.render_camera_set_select"
 	bl_label = "Render: Add selected camera"
 	bl_description = ""
-	# Enable undo…
 	bl_option = {'REGISTER', 'UNDO'}
 
 	def execute(self, context):
@@ -140,7 +108,6 @@ class RenderCameraSetSelect(Operator, RenderCameraBase):
 		return {"FINISHED"}
 
 	def invoke(self, context, event):
-		# self.object = bpy.context.selected_objects[0]
 		return self.execute(context)
 
 
@@ -183,12 +150,7 @@ class RenderCameraOption(bpy.types.Operator):
 	bl_idname = "scene.render_camera_option"
 	bl_label = "Render: Copy Settings Preset"
 	bl_description = "Apply or clear this preset of render settings"
-	# Enable undo…
 	bl_option = {'REGISTER', 'UNDO'}
-
-	presets = EnumProperty(items=(p.rna_enum for p in preset.presets),
-	                       default=set(),
-	                       options={'ENUM_FLAG'})
 
 	@staticmethod
 	def process_elements(settings, elts):
@@ -237,13 +199,12 @@ class RenderCameraSet(Operator):
 			# ---------------------
 			# Get current render setting copy.
 			# -----------------
-			
 			rendersettings_properties = [p.identifier for p in current_scene.render.bl_rna.properties
 						if not p.is_readonly]
-			# Copy the state
-			# for k in rendersettings_properties:
-			# 	target_attr_value = getattr(current_scene.render, k)
-			# 	setattr(current_scene.render, k, target_attr_value)
+			render_setting_copy = {}
+			for k in rendersettings_properties:
+				target_attr_value = getattr(current_scene.render, k)
+				render_setting_copy[k] = target_attr_value
 
 			current_render_camera = current_scene.camera
 			current_slot = bpy.data.images['Render Result'].render_slots.active_index
@@ -293,17 +254,16 @@ class RenderCameraSet(Operator):
 				# -------------------------
 				# Reset the configuration.
 				# -------------------------
-				for k in rendersettings_properties:
-					target_attr_value = getattr(current_scene.render, k)
-					setattr(current_scene.render, k, target_attr_value)
+				for k, v in render_setting_copy.items():
+					setattr(current_scene.render, k, v)
 				# Reset slot view and main camera.
 				bpy.data.images['Render Result'].render_slots.active_index = current_slot
-				current_scene.camera = current_render_camera
-				current_scene.render.filepath = current_filepath
+#				current_scene.camera = current_render_camera
+#				current_scene.render.filepath = current_filepath
 
 				# Compute the total time.
 				total_time = time.time() - time_start
-				self.report({'INFO'}, str(total_time))
+				self.report({'INFO'}, str("Total time: {}", total_time))
 
 				#
 				bpy.ops.render.view_show('INVOKE_DEFAULT')
