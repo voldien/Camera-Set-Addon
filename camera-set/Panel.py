@@ -8,6 +8,7 @@ if "bpy" in locals():
 from . import preset
 
 from bpy.types import Panel, UIList
+from bpy.types import Operator
 
 class SCENE_UL_camera_settings(UIList):
 	bl_label = "Camera List"
@@ -19,9 +20,9 @@ class SCENE_UL_camera_settings(UIList):
 		if self.layout_type in {'DEFAULT', 'COMPACT'}:
 			display_name =""
 			if cameraData.camera:
-				display_name = str.format(
-					"{} ({})", cameraData.name, cameraData.camera.name)
+				display_name = str.format("({})", cameraData.camera.name)
 			layout.prop(cameraData, "name", icon_value=icon, icon='CAMERA_DATA', emboss=False, text="")
+			layout.label(display_name)
 			layout.prop(cameraData, "enabled", index=index, text="")
 		elif self.layout_type in {'GRID'}:
 			layout.alignment = 'CENTER'
@@ -57,8 +58,12 @@ class SCENE_PT_cameraset(Panel, CameraSetPanel):
 		global_layout.label("Global Settings")
 
 		output_row_layout = global_layout.column()
+
+		if camera_sett.use_default_output_directory:
+			output_row_layout.active = False
 		output_row_layout.prop(camera_sett, "output_directory")
 		#output_row_layout.
+		output_row_layout.active = True
 		output_row_layout.prop(camera_sett, "use_default_output_directory")
 		output_row_layout.prop(camera_sett, "pattern")
 		#bpy.ops.buttons.context_menu()
@@ -74,16 +79,16 @@ class SCENE_PT_cameraset(Panel, CameraSetPanel):
 		                    camera_sett, "affected_settings_idx", rows=3)
 		col = row.column()
 		sub = col.column(align=True)
-		sub.operator("scene.render_camera_set_select", icon='ZOOMIN', text="")
-		sub.operator("scene.render_camera_set_deselect", icon='ZOOMOUT', text="")
+		sub.operator("scene.render_camera_set_add", icon='ZOOMIN', text="")
+		sub.operator("scene.render_camera_set_remove", icon='ZOOMOUT', text="")
 		#col.prop(camera_sett, "use_single_layer", icon_only=True)
 		
 		#
 		# layout.enabled = len(camera_sett.cameras) > 0
 		# layout.operator("scene.render_camera_set", text="Camera Render Set")
 		col = layout.split(0.5)
-		col.operator("scene.render_camera_set_select", text="Add Camera")
-		col.operator("scene.render_camera_set_deselect", text="Remove Camera")
+		col.operator("scene.render_camera_set_select", text="Add Selected Camera")
+		col.operator("scene.render_camera_set_deselect", text="Remove Selected Camera")
 
 		# Display camera target settings.
 		if len(camera_sett.cameras) > 0 and camera_sett.affected_settings_idx >= 0:

@@ -69,31 +69,41 @@ from bpy.types import RenderSettings, ImageFormatSettings
 #         for sett, val in p.items():
 #             setattr(scene.render, sett, val)
 
-def valid_poll_object(objects):
-	for o in objects:
-		if valid_camera_object(o):
-			return False
-	return True
 
-def valid_camera_object(obj):
-	return obj.type != 'CAMERA'
 
-def check_object_in_set(camera_set_sett, selected_objects):
-	for camera_set in camera_set_sett:
-		if camera_set == selected_object:
-			return True
-	return False
+class RenderCameraBase:
+	bl_option = {'REGISTER', 'UNDO'}
 
-class RenderCameraDesetSelect(bpy.types.Operator):
-	"""Apply some presets of render settings to copy to other scenes"""
+	@classmethod
+	def valid_poll_object(clc, objects):
+		for o in objects:
+			if clc.valid_camera_object(o):
+				return True
+		return False
+
+	@classmethod
+	def valid_camera_object(clc, obj):
+		return obj.type == 'CAMERA'
+
+	@classmethod
+	def check_object_in_set(clc, camera_set_sett, selected_objects):
+		for camera_set in camera_set_sett.cameras:
+			if camera_set == selected_objects:
+				return True
+		return False
+
+	@classmethod
+	def poll(cls, context):
+		return context.scene is not None \
+		and cls.valid_poll_object(bpy.context.selected_objects) \
+		and len(bpy.context.selected_objects) > 0
+
+
+class RenderCameraDesetSelect(Operator, RenderCameraBase):
 	bl_idname = "scene.render_camera_set_deselect"
 	bl_label = "Render: Remove selected camera"
 	bl_description = ""
 	bl_option = {'REGISTER', 'UNDO'}
-
-	@classmethod
-	def poll(cls, context):
-		return context.scene is not None and valid_poll_object(bpy.context.selected_objects) and len(bpy.context.selected_objects) > 0
 
 	def execute(self, context):
 		camera_set_sett = context.scene.render_camera_set_settings
@@ -107,7 +117,7 @@ class RenderCameraDesetSelect(bpy.types.Operator):
 		return self.execute(context)
 
 
-class RenderCameraSetSelect(bpy.types.Operator):
+class RenderCameraSetSelect(Operator, RenderCameraBase):
 	"""Apply some presets of render settings to copy to other scenes"""
 	bl_idname = "scene.render_camera_set_select"
 	bl_label = "Render: Add selected camera"
@@ -115,26 +125,57 @@ class RenderCameraSetSelect(bpy.types.Operator):
 	# Enable undo…
 	bl_option = {'REGISTER', 'UNDO'}
 
-	@classmethod
-	def poll(cls, context):
-		return context.scene is not None and valid_poll_object(bpy.context.selected_objects)and len(bpy.context.selected_objects) > 0
-
 	def execute(self, context):
 		camera_set_sett = context.scene.render_camera_set_settings
 		selected_objects = bpy.context.selected_objects
 
 		for obj in selected_objects:
-			if valid_camera_object(obj):
-				pass
-
-		item = camera_set_sett.cameras.add()
-		item.camera = bpy.context.selected_objects[0]
+			if self.valid_camera_object(obj):
+				if not self.check_object_in_set(camera_set_sett, obj):
+					item = camera_set_sett.cameras.add()
+					item.camera = obj
+					item.name = str.format("Element {}", len(camera_set_sett.cameras) - 1)
+					item.filepath = ""
 		
 		return {"FINISHED"}
 
 	def invoke(self, context, event):
 		# self.object = bpy.context.selected_objects[0]
 		return self.execute(context)
+
+
+class RenderCameraAdd(Operator, RenderCameraBase):
+	bl_idname = "scene.render_camera_set_add"
+	bl_label = "Render: Add selected camera"
+	bl_description = ""
+
+	def execute(self, context):
+			camera_set_sett = context.scene.render_camera_set_settings
+
+			item = camera_set_sett.cameras.add()
+			item.camera = None
+			item.name = str.format("Element {}", len(camera_set_sett.cameras) - 1)
+			item.filepath = ""
+
+			return {"FINISHED"}
+
+	def invoke(self, context, event):
+		return self.execute(context)
+
+class RenderCameraRemove(bpy.types.Operator, RenderCameraBase):
+	bl_idname = "scene.render_camera_set_remove"
+	bl_label = "Render: Remove camera element"
+	bl_description = "Remove the current selected camera element in the camera list."
+
+	def execute(self, context):
+		camera_set_sett = context.scene.render_camera_set_settings
+		camera_set_sett.cameras.remove(camera_set_sett.affected_settings_idx)
+		return {"FINISHED"}
+
+	def invoke(self, context, event):
+		return self.execute(context)
+
+
 
 
 class RenderCameraOption(bpy.types.Operator):
@@ -260,7 +301,7 @@ class RenderCameraSet(Operator):
 				current_scene.camera = current_render_camera
 				current_scene.render.filepath = current_filepath
 
-				# 
+				# Compute the total time.
 				total_time = time.time() - time_start
 				self.report({'INFO'}, str(total_time))
 
@@ -281,6 +322,8 @@ class RenderCameraSet(Operator):
 classes = (
 	RenderCameraSet,  #
 	RenderCameraOption,  #
+	RenderCameraAdd,
+	RenderCameraRemove,
 	RenderCameraSetSelect,  #
 	RenderCameraDesetSelect  #
 )

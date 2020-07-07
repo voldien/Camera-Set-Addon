@@ -46,6 +46,7 @@ class RenderCameraData(bpy.types.PropertyGroup):
 	camera = PointerProperty(name="camera", type=bpy.types.Object, description="Camera Targets")  # ,
 	filepath = StringProperty(
 		name="filepath", default='', subtype='FILE_PATH', description="")
+	use_name = BoolProperty(name="", default=True)
 	#
 	image_reference = PointerProperty(type=bpy.types.Image)
 	enabled = BoolProperty(name="enabled", default=True, description="Target enabled for as a render target.")
