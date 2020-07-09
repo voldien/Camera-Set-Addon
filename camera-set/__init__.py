@@ -4,7 +4,7 @@ bl_info = {
 	"name": "Camera Render Set",
 	"author": "Valdemar Lindberg",
 	"version": (0, 1, 0),
-	"blender": (2, 79, 0),
+	"blender": (2, 83, 0),
 	"location": "Properties > Render",
 	"description": "A tool for creating a set of cameras that can be rendered in a single render call",
 	"warning": "",
