@@ -61,16 +61,18 @@ class SCENE_PT_cameraset(Panel, CameraSetPanel):
 
 		if camera_sett.use_default_output_directory:
 			output_row_layout.active = False
-		output_row_layout.prop(camera_sett, "output_directory")
+		output_row_layout.label("Output Directory")
+		output_row_layout.prop(camera_sett, "output_directory", text="")
 		#output_row_layout.
 		output_row_layout.active = True
-		output_row_layout.prop(camera_sett, "use_default_output_directory")
-		output_row_layout.prop(camera_sett, "pattern")
-		#bpy.ops.buttons.context_menu()
+		output_directory_layout = output_row_layout.row()
+		output_directory_layout.prop(
+			camera_sett, "use_default_output_directory", text="Use Default Output")
+		if camera_sett.use_default_output_directory == True:
+			output_directory_layout.label(str.format("({})", context.scene.render.filepath))
 
 		layout.separator()
 
-#prop_search
 		# Display the camera list.
 		row = layout.row()
 		col = row.column()
@@ -83,9 +85,6 @@ class SCENE_PT_cameraset(Panel, CameraSetPanel):
 		sub.operator("scene.render_camera_set_remove", icon='ZOOMOUT', text="")
 		#col.prop(camera_sett, "use_single_layer", icon_only=True)
 		
-		#
-		# layout.enabled = len(camera_sett.cameras) > 0
-		# layout.operator("scene.render_camera_set", text="Camera Render Set")
 		col = layout.split(0.5)
 		col.operator("scene.render_camera_set_select", text="Add Selected Camera")
 		col.operator("scene.render_camera_set_deselect", text="Remove Selected Camera")

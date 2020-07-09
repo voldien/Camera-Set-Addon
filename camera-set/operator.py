@@ -57,14 +57,20 @@ class RenderCameraBase:
 				return True
 		return False
 
+	
 	@classmethod
-	def poll(cls, context):
+	def poll_selected(clc, context):
 		return context.scene is not None \
-		and cls.valid_poll_object(bpy.context.selected_objects) \
-		and len(bpy.context.selected_objects) > 0
+			and clc.valid_poll_object(bpy.context.selected_objects) \
+            and len(bpy.context.selected_objects) > 0
+
+	@classmethod
+	def poll_passive(clc, context):
+		return context.scene is not None
 
 	@classmethod
 	def addDefaultCameraElement(cls, camera_setting):
+		
 		pass
 
 
@@ -73,6 +79,10 @@ class RenderCameraDesetSelect(Operator, RenderCameraBase):
 	bl_label = "Render: Remove selected camera"
 	bl_description = ""
 	bl_option = {'REGISTER', 'UNDO'}
+
+	@classmethod
+	def poll(cls, context):
+		return cls.poll_selected(context)
 
 	def execute(self, context):
 		camera_set_sett = context.scene.render_camera_set_settings
@@ -92,6 +102,10 @@ class RenderCameraSetSelect(Operator, RenderCameraBase):
 	bl_label = "Render: Add selected camera"
 	bl_description = ""
 	bl_option = {'REGISTER', 'UNDO'}
+
+	@classmethod
+	def poll(cls, context):
+		return cls.poll_selected(context)
 
 	def execute(self, context):
 		camera_set_sett = context.scene.render_camera_set_settings
@@ -116,6 +130,10 @@ class RenderCameraAdd(Operator, RenderCameraBase):
 	bl_label = "Render: Add selected camera"
 	bl_description = ""
 
+	@classmethod
+	def poll(cls, context):
+		return cls.poll_passive(context)
+
 	def execute(self, context):
 			camera_set_sett = context.scene.render_camera_set_settings
 
@@ -133,6 +151,10 @@ class RenderCameraRemove(bpy.types.Operator, RenderCameraBase):
 	bl_idname = "scene.render_camera_set_remove"
 	bl_label = "Render: Remove camera element"
 	bl_description = "Remove the current selected camera element in the camera list."
+
+	@classmethod
+	def poll(cls, context):
+		return cls.poll_passive(context)
 
 	def execute(self, context):
 		camera_set_sett = context.scene.render_camera_set_settings
