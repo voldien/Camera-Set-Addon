@@ -22,11 +22,11 @@ class SCENE_UL_camera_settings(UIList):
 			if cameraData.camera:
 				display_name = str.format("({})", cameraData.camera.name)
 			layout.prop(cameraData, "name", icon_value=icon, icon='CAMERA_DATA', emboss=False, text="")
-			layout.label(display_name)
+			layout.label(text=display_name)
 			layout.prop(cameraData, "enabled", index=index, text="")
 		elif self.layout_type in {'GRID'}:
 			layout.alignment = 'CENTER'
-			layout.label("", icon_value=icon)
+			layout.label(text="", icon_value=icon)
 
 class CameraSetPanel:
 	bl_space_type = 'PROPERTIES'	
@@ -55,13 +55,13 @@ class SCENE_PT_cameraset(Panel, CameraSetPanel):
 
 		global_layout = layout
 		global_layout.alignment = 'LEFT'
-		global_layout.label("Global Settings")
+		global_layout.label(text="Global Settings")
 
 		output_row_layout = global_layout.column()
 
 		if camera_sett.use_default_output_directory:
 			output_row_layout.active = False
-		output_row_layout.label("Output Directory")
+		output_row_layout.label(text="Output Directory")
 		output_row_layout.prop(camera_sett, "output_directory", text="")
 		#output_row_layout.
 		output_row_layout.active = True
@@ -69,7 +69,7 @@ class SCENE_PT_cameraset(Panel, CameraSetPanel):
 		output_directory_layout.prop(
 			camera_sett, "use_default_output_directory", text="Use Default Output")
 		if camera_sett.use_default_output_directory == True:
-			output_directory_layout.label(str.format("({})", context.scene.render.filepath))
+			output_directory_layout.label(text=str.format("({})", context.scene.render.filepath))
 
 		layout.separator()
 
@@ -85,7 +85,7 @@ class SCENE_PT_cameraset(Panel, CameraSetPanel):
 		sub.operator("scene.render_camera_set_remove", icon='ZOOMOUT', text="")
 		#col.prop(camera_sett, "use_single_layer", icon_only=True)
 		
-		col = layout.split(0.5)
+		col = layout.split(percentage=0.5)
 		col.operator("scene.render_camera_set_select", text="Add Selected Camera")
 		col.operator("scene.render_camera_set_deselect", text="Remove Selected Camera")
 
@@ -93,13 +93,13 @@ class SCENE_PT_cameraset(Panel, CameraSetPanel):
 		if len(camera_sett.cameras) > 0 and camera_sett.affected_settings_idx >= 0:
 			layout.separator()
 			layout.enabled = len(camera_sett.cameras) > 0
-			layout.label("Camera Setting")
+			layout.label(text="Camera Setting")
 			cameraData = camera_sett.cameras[camera_sett.affected_settings_idx]
 
 			# Properties.
 			layout.prop(cameraData, property="enabled", text="Enabled")
 			layout.prop(cameraData, property="camera", text="Camera")
-			layout.label(str.format("Relative Output"))
+			layout.label(text=str.format("Relative Output"))
 			layout.prop(cameraData, property="filepath", text="")
 
 			# Future feature
