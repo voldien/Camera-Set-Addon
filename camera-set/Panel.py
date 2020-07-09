@@ -94,15 +94,16 @@ class SCENE_PT_cameraset(Panel, CameraSetPanel):
 			layout.separator()
 			layout.enabled = len(camera_sett.cameras) > 0
 			layout.label("Camera Setting")
-			#split = layout.split(0.9)
 			cameraData = camera_sett.cameras[camera_sett.affected_settings_idx]
-#		        file_format = image_settings.file_format
-#        image_settings = rd.image_settings
+
+			# Properties.
 			layout.prop(cameraData, property="enabled", text="Enabled")
 			layout.prop(cameraData, property="camera", text="Camera")
-			layout.label(str.format("Output"))
+			layout.label(str.format("Relative Output"))
 			layout.prop(cameraData, property="filepath", text="")
-			layout.prop(cameraData, property="override_rendering_setting")
+
+			# Future feature
+			#layout.prop(cameraData, property="override_rendering_setting")
 			# layout.template_image_settings(
 			# 	cameraData.image_settings, color_management=False)
 

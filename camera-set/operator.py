@@ -210,6 +210,7 @@ class RenderCameraSet(Operator):
 	bl_description = "Render all camera in the camera set."
 	bl_options = {'REGISTER'}
 
+
 	# Perform rendering
 	def execute(self, context):
 		window = bpy.context.window_manager.windows[0]
@@ -228,16 +229,16 @@ class RenderCameraSet(Operator):
 				target_attr_value = getattr(current_scene.render, k)
 				render_setting_copy[k] = target_attr_value
 
+			# 
 			current_render_camera = current_scene.camera
 			current_slot = bpy.data.images['Render Result'].render_slots.active_index
 			current_filepath = current_scene.render.filepath
-			# Get current rendering settings.
-			print(rendersettings_properties)
 
 			# Iterate through each camera.
 			time_start = time.time()
 			try:
 				for i, camera_element in enumerate(camera_set_settings.cameras):
+					# TODO encapsulate render condition.
 					if camera_element.enabled and camera_element.camera is not None and not camera_element.camera.hide_render:
 
 						path_dir = ""
@@ -246,15 +247,19 @@ class RenderCameraSet(Operator):
 
 						# Compute the directory and file paths.
 						path_filename = camera_element.filepath
+						if len(path_filename.strip()) == 0:
+							path_filename = camera_element.name
+
 						if camera_set_settings.use_default_output_directory == False:
 							path_dir = camera_set_settings.output_directory
-							full_path = str.format(
-								"{}/{}", camera_set_settings.output_directory, path_filename)
 						else:
-							path_dir = current_scene.render.filepath
-							full_path = str.format(
-								"{}/{}", current_scene.render.filepath, path_filename)
+							path_dir = current_filepath
+						full_path = str.format(
+							"{}{}", path_dir, path_filename)
 
+						print(full_path)
+						#path_filename = bpy.path.ensure_ext(
+						#	bpy.path.display_name_from_filepath(full_path))
 						# Override rendering settings.
 						current_scene.camera = camera_element.camera
 						current_scene.render.filepath = bpy.path.abspath(full_path)
@@ -264,12 +269,14 @@ class RenderCameraSet(Operator):
 						self.report({'INFO'}, str.format("Rendering Camera: {}.", camera_element.camera.name))
 
 						# Invoke rendering.
-						bpy.ops.render.render('INVOKE_DEFAULT', use_viewport=True, write_still=True)
-						bpy.data.images['Render Result'].render_slots.active_index = i
+						bpy.ops.render.render( use_viewport=False, write_still=True)
+						# Possible feature.
+						#bpy.data.images['Render Result'].render_slots.active_index = i
+						bpy.ops.render.view_show('INVOKE_DEFAULT')
 
-						# Add image if not existing.
-						bpy.ops.image.open(
-							filepath=bpy.path.basename(full_path), directory=path_dir, show_multiview=False)
+						# Possible Features - Add image if not existing.
+						#bpy.ops.image.open(
+						#	filepath=bpy.path.basename(full_path), directory=path_dir, show_multiview=False)
 			except Exception as inst:
 				self.report({'ERROR'}, str(inst))
 			finally:
@@ -280,12 +287,10 @@ class RenderCameraSet(Operator):
 					setattr(current_scene.render, k, v)
 				# Reset slot view and main camera.
 				bpy.data.images['Render Result'].render_slots.active_index = current_slot
-#				current_scene.camera = current_render_camera
-#				current_scene.render.filepath = current_filepath
 
 				# Compute the total time.
 				total_time = time.time() - time_start
-				self.report({'INFO'}, str("Total time: {}", total_time))
+				self.report({'INFO'}, str.format("Total time: {}", str(total_time)))
 
 				#
 				bpy.ops.render.view_show('INVOKE_DEFAULT')
@@ -294,10 +299,10 @@ class RenderCameraSet(Operator):
 
 	@classmethod
 	def poll(cls, context):
-
 		return context.scene is not None and len(context.scene.render_camera_set_settings.cameras) > 0
 
 	def cancel(self, context):
+		bpy.ops.render.view_cancel()
 		pass
 
 
