@@ -6,7 +6,7 @@ bl_info = {
 	"version": (0, 1, 0),
 	"blender": (2, 79, 0),
 	"location": "Properties > Render",
-	"description": "Render a camera set.",
+	"description": "A tool for creating a set of cameras that can be rendered in a single render call",
 	"warning": "",
 	"wiki_url": "",
 	"category": "Render",
@@ -43,38 +43,37 @@ class OverrideRenderSetting(RenderSettings):
 
 class RenderCameraData(bpy.types.PropertyGroup):
 	name = StringProperty(name="name", default="", description="Name of the camera target.")
-	camera = PointerProperty(name="camera", type=bpy.types.Object, description="Camera Targets")  # ,
+	camera = PointerProperty(name="camera", type=bpy.types.Object, description="Camera target object.")  # ,
 	filepath = StringProperty(
-		name="filepath", default='', subtype='FILE_PATH', description="")
-	use_name = BoolProperty(name="", default=True)
-	#
-	image_reference = PointerProperty(type=bpy.types.Image)
-	enabled = BoolProperty(name="enabled", default=True, description="Target enabled for as a render target.")
-	override_rendering_setting = BoolProperty(
-            name="Override Rendering Setting", description="Override the default rendering setting.")
-	render_setting = PointerProperty(
-		name="RenderSetting", description="Rendering setting.", type=bpy.types.CyclesRenderSettings)
-	affected_settings_idx = IntProperty()
+		name="filepath", default='', subtype='FILE_PATH', description="Relative filepath from the global output directory.")
 
-class RenderCameraSetSettings(bpy.types.PropertyGroup):
+
+	enabled = BoolProperty(name="enabled", default=True, description="Target enabled for as a render target.")
+	affected_settings_idx = IntProperty()
+	## Future possible features ##
+	# image_reference = PointerProperty(type=bpy.types.Image)
+	# use_name = BoolProperty(name="", default=True)
+	# override_rendering_setting = BoolProperty(
+    #         name="Override Rendering Setting", description="Override the default rendering setting.")
+	# render_setting = PointerProperty(
+	# 	name="RenderSetting", description="Rendering setting.", type=bpy.types.CyclesRenderSettings)
+
+class RenderCameraSetSceneSettings(bpy.types.PropertyGroup):
 	#
 	cameras = CollectionProperty(
 		type=RenderCameraData, name="cameras", description="")
-	# TODO rename
 	affected_settings_idx = IntProperty()
-	pattern = BoolProperty(name="pattern", description="", default=False)
-	render = BoolProperty(name="render", description="", default=False)
 	output_directory = StringProperty(
 		name="Output Directory", description="", default="", subtype='DIR_PATH')
-	use_default_output_directory = BoolProperty(
-		"Default Output", description="", default=True)
+	use_default_output_directory = BoolProperty(name="Use Default Output"
+		"Default Output", description="Use the directory specified in the Render section.", default=True)
 	enabled = BoolProperty(name="Enabled", description="", default=False)
-
+	## Future possible features ##
+	# render = BoolProperty(name="render", description="", default=False)
 
 classes = (
-	          #RenderCameraSetSceneSettings,
 	          RenderCameraData,
-	          RenderCameraSetSettings
+	          RenderCameraSetSceneSettings
           ) + operator.classes + Panel.classes
 addon_keymaps = []
 
@@ -89,7 +88,7 @@ def register():
 	for cls in classes:
 		bpy.utils.register_class(cls)
 
-	bpy.types.Scene.render_camera_set_settings = PointerProperty(type=RenderCameraSetSettings)
+	bpy.types.Scene.render_camera_set_settings = PointerProperty(type=RenderCameraSetSceneSettings)
 
 	# Create menus.
 	if bpy.app.version >= (2, 80, 0):
