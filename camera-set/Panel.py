@@ -14,7 +14,7 @@ class SCENE_UL_camera_settings(UIList):
 	bl_label = "Camera List"
 	bl_options = {'HIDE_HEADER'}
 	def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
-#		assert(isinstance(item, RenderCameraData))
+		#assert(isinstance(item, RenderCameraData))
 
 		cameraData = item
 		if self.layout_type in {'DEFAULT', 'COMPACT'}:
@@ -63,7 +63,8 @@ class SCENE_PT_cameraset(Panel, CameraSetPanel):
 			output_row_layout.active = False
 		output_row_layout.label(text="Output Directory")
 		output_row_layout.prop(camera_sett, "output_directory", text="")
-		#output_row_layout.
+		
+		#
 		output_row_layout.active = True
 		output_directory_layout = output_row_layout.row()
 		output_directory_layout.prop(
