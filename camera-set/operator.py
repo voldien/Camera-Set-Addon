@@ -40,9 +40,9 @@ class RenderCameraBase:
 	bl_option = {'REGISTER', 'UNDO'}
 
 	@classmethod
-	def valid_poll_object(clc, objects):
+	def valid_poll_object(cls, objects):
 		for o in objects:
-			if clc.valid_camera_object(o):
+			if cls.valid_camera_object(o):
 				return True
 		return False
 
@@ -230,7 +230,6 @@ class RenderCameraSet(Operator):
 				render_setting_copy[k] = target_attr_value
 
 			# 
-			current_render_camera = current_scene.camera
 			current_slot = bpy.data.images['Render Result'].render_slots.active_index
 			current_filepath = current_scene.render.filepath
 
@@ -257,20 +256,17 @@ class RenderCameraSet(Operator):
 						full_path = str.format(
 							"{}{}", path_dir, path_filename)
 
-						print(full_path)
-						#path_filename = bpy.path.ensure_ext(
-						#	bpy.path.display_name_from_filepath(full_path))
 						# Override rendering settings.
 						current_scene.camera = camera_element.camera
 						current_scene.render.filepath = bpy.path.abspath(full_path)
 
 						# 
 						bpy.data.images['Render Result'].render_slots.active_index = i
-						self.report({'INFO'}, str.format("Rendering Camera: {}.", camera_element.camera.name))
+						#self.report({'INFO'}, str.format("Rendering Camera: {}.", camera_element.camera.name))
 
 						# Invoke rendering.
-						bpy.ops.render.render( use_viewport=False, write_still=True)
-						# Possible feature.
+						bpy.ops.render.render( use_viewport=False, write_still=True, scene=current_scene.name)
+						# Possible future feature.
 						#bpy.data.images['Render Result'].render_slots.active_index = i
 						bpy.ops.render.view_show('INVOKE_DEFAULT')
 
@@ -290,7 +286,7 @@ class RenderCameraSet(Operator):
 
 				# Compute the total time.
 				total_time = time.time() - time_start
-				self.report({'INFO'}, str.format("Total time: {}", str(total_time)))
+				self.report({'INFO'}, str.format("Total time: {} seconds", str(total_time)))
 
 				#
 				bpy.ops.render.view_show('INVOKE_DEFAULT')

@@ -41,9 +41,17 @@ class RenderCameraSetSceneSettings(bpy.types.PropertyGroup):
 class OverrideRenderSetting(RenderSettings):
 	pass	
 
+
+
+
 class RenderCameraData(bpy.types.PropertyGroup):
+
+	def IsCameraObject(self, obj):
+		return obj.type == 'CAMERA'
+
 	name = StringProperty(name="name", default="", description="Name of the camera target.")
-	camera = PointerProperty(name="camera", type=bpy.types.Object, description="Camera target object.")  # ,
+	camera = PointerProperty(name="camera", type=bpy.types.Object,
+	                         description="Camera target object.", poll=IsCameraObject)  # ,
 	filepath = StringProperty(
 		name="filepath", default='', subtype='FILE_PATH', description="Relative filepath from the global output directory.")
 
