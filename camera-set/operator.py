@@ -18,23 +18,8 @@ if "bpy" in locals():
 		importlib.reload(preset)
 from . import preset
 from bpy.types import RenderSettings, ImageFormatSettings
-
-# # Real interesting stuff…
-#
-# def do_copy(context, affected_settings, allowed_scenes):
-#     # Stores render settings from current scene.
-#     p = {sett: getattr(context.scene.render, sett)
-#          for sett in affected_settings}
-#     # put it in all other (valid) scenes’ render settings!
-#     for scene in bpy.data.scenes:
-#         # If scene not in allowed scenes, skip.
-#         if scene.name not in allowed_scenes:
-#             continue
-#         # Propagate all affected settings.
-#         for sett, val in p.items():
-#             setattr(scene.render, sett, val)
-
-
+from bpy.app.handlers import persistent
+from threading import Thread
 
 class RenderCameraBase:
 	bl_option = {'REGISTER', 'UNDO'}
@@ -203,6 +188,11 @@ class RenderCameraSetGL(Operator):
 	bl_options = {'REGISTER', 'UNDO'}
 	pass
 
+@persistent
+def render_handler(dummy):
+	#bpy.ops.render.view_show()
+	print("Load Handler:", bpy.data.filepath)
+
 class RenderCameraSet(Operator):
 	"""Create mesh plane(s) from image files with the appropriate aspect ratio"""
 	bl_idname = "scene.render_camera_set"
@@ -213,7 +203,18 @@ class RenderCameraSet(Operator):
 
 	# Perform rendering
 	def execute(self, context):
+		wm = bpy.context.window_manager
+		self.timer = wm.event_timer_add(0.5, window=context.window)
+		wm.modal_handler_add(self)
+
+		self.thread = Thread(target=self._run, args=(context,))
+		self.thread.start()
+		return {'RUNNING_MODAL'}
+
+	def _run(self, context):
+		wm = bpy.context.window_manager
 		window = bpy.context.window_manager.windows[0]
+
 		# Camera set settings.
 		current_scene = context.scene
 		camera_set_settings = current_scene.render_camera_set_settings
@@ -233,8 +234,10 @@ class RenderCameraSet(Operator):
 			current_slot = bpy.data.images['Render Result'].render_slots.active_index
 			current_filepath = current_scene.render.filepath
 
+
 			# Iterate through each camera.
 			time_start = time.time()
+			wm.progress_begin(0, len(camera_set_settings.cameras))
 			try:
 				for i, camera_element in enumerate(camera_set_settings.cameras):
 					# TODO encapsulate render condition.
@@ -265,17 +268,22 @@ class RenderCameraSet(Operator):
 						#self.report({'INFO'}, str.format("Rendering Camera: {}.", camera_element.camera.name))
 
 						# Invoke rendering.
-						bpy.ops.render.render( use_viewport=False, write_still=True, scene=current_scene.name)
+						bpy.ops.render.render(use_viewport=False, animation=False, write_still=True, scene=current_scene.name)
 						# Possible future feature.
 						#bpy.data.images['Render Result'].render_slots.active_index = i
-						bpy.ops.render.view_show('INVOKE_DEFAULT')
+						#bpy.ops.render.view_show()
+						#bpy.ops.image.save_as(save_as_render=True, copy=True, filepath=full_path,
+						#                     relative_path=True, show_multiview=False, use_multiview=False)
+
 
 						# Possible Features - Add image if not existing.
 						#bpy.ops.image.open(
 						#	filepath=bpy.path.basename(full_path), directory=path_dir, show_multiview=False)
+						wm.progress_update(i)
 			except Exception as inst:
 				self.report({'ERROR'}, str(inst))
 			finally:
+				wm.progress_end()
 				# -------------------------
 				# Reset the configuration.
 				# -------------------------
@@ -291,22 +299,50 @@ class RenderCameraSet(Operator):
 				#
 				bpy.ops.render.view_show('INVOKE_DEFAULT')
 
-		return {'FINISHED'}
+	def modal(self, context, event):
+		wm = context.window_manager
+		# Stop the thread when ESCAPE is pressed.
+		if event.type == 'ESC':
+			self.cancel(context)
+			return {'CANCEL'}
+#			self.state = ParallelRenderState.CANCELLING
+#			self._report_progress()
 
+		if event.type == 'TIMER':
+			still_running = self.thread.is_alive()
+			#with self.summary_mutex:
+			#	percent = 4
+
+			if still_running:
+				wm.progress_update(10)
+				#self._report_progress()
+				return {'PASS_THROUGH'}
+
+			self.thread.join()
+			wm.event_timer_remove(self.timer)
+			wm.progress_end()
+			bpy.ops.render.view_show('INVOKE_DEFAULT')
+			return {'FINISHED'}
+		return {'PASS_THROUGH'}
+
+
+	def invoke(self, context, event):
+		wm = context.window_manager
+		return self.execute(context)#wm.invoke_props_dialog(self)
+	
 	@classmethod
 	def poll(cls, context):
 		return context.scene is not None and len(context.scene.render_camera_set_settings.cameras) > 0
 
 	def cancel(self, context):
 		bpy.ops.render.view_cancel()
-		pass
 
 
 classes = (
-	RenderCameraSet,  #
-	RenderCameraOption,  #
+	RenderCameraSet,
+	RenderCameraOption,
 	RenderCameraAdd,
 	RenderCameraRemove,
-	RenderCameraSetSelect,  #
-	RenderCameraDesetSelect  #
+	RenderCameraSetSelect,
+	RenderCameraDesetSelect
 )

@@ -122,8 +122,12 @@ def register():
 
 	bpy.app.translations.register(__name__, translations.translations_dict)
 
+	bpy.app.handlers.render_complete.append(operator.render_handler)
+
 
 def unregister():
+	bpy.app.handlers.render_complete.remove(operator.render_handler)
+
 	bpy.app.translations.unregister(__name__)
 
 	# remove keymap entries
@@ -144,6 +148,9 @@ def unregister():
 	# unregister the class.
 	for cls in classes[::-1]:
 		bpy.utils.unregister_class(cls)
+
+
+
 
 if __name__ == "__main__":
     register()
