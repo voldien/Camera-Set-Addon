@@ -14,9 +14,6 @@ from bpy.types import Operator
 if "bpy" in locals():
 	import importlib
 
-	if "preset" in locals():
-		importlib.reload(preset)
-from . import preset
 from bpy.types import RenderSettings, ImageFormatSettings
 from bpy.app.handlers import persistent
 from threading import Thread
@@ -32,11 +29,11 @@ class RenderCameraBase:
 		return False
 
 	@classmethod
-	def valid_camera_object(clc, obj):
+	def valid_camera_object(cls, obj):
 		return obj.type == 'CAMERA'
 
 	@classmethod
-	def check_object_in_set(clc, camera_set_sett, selected_objects):
+	def check_object_in_set(cls, camera_set_sett, selected_objects):
 		for camera_set in camera_set_sett.cameras:
 			if camera_set == selected_objects:
 				return True
@@ -44,13 +41,13 @@ class RenderCameraBase:
 
 	
 	@classmethod
-	def poll_selected(clc, context):
+	def poll_selected(cls, context):
 		return context.scene is not None \
-			and clc.valid_poll_object(bpy.context.selected_objects) \
+			and cls.valid_poll_object(bpy.context.selected_objects) \
             and len(bpy.context.selected_objects) > 0
 
 	@classmethod
-	def poll_passive(clc, context):
+	def poll_passive(cls, context):
 		return context.scene is not None
 
 	@classmethod
@@ -252,7 +249,7 @@ class RenderCameraSet(Operator):
 						if len(path_filename.strip()) == 0:
 							path_filename = camera_element.name
 
-						if camera_set_settings.use_default_output_directory == False:
+						if not camera_set_settings.use_default_output_directory:
 							path_dir = camera_set_settings.output_directory
 						else:
 							path_dir = current_filepath

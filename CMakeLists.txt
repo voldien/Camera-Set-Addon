@@ -22,6 +22,14 @@ IF( UNIX )
 			${TARGETDIR}
 			COMMAND ${TAR} cf - ${TARGETDIR} | ${GZIP} -c > ${TARGETDIR}.tar.gz
 			COMMAND ${RM} -r ${TARGETDIR} )
+	SET( TARGETADDONDIR "${PROJECT_NAME}-${VERSION}")
+	ADD_CUSTOM_TARGET(addon-package
+			COMMENT "Creating Addon Installation Package."
+			COMMAND mkdir -p ${TARGETADDONDIR}
+			COMMAND ${CP} -r  ${CMAKE_CURRENT_SOURCE_DIR}/camera-set
+			${TARGETADDONDIR}
+			COMMAND ${TAR} cf - ${TARGETADDONDIR} | ${GZIP} -c > ${TARGETADDONDIR}.tar.gz
+			COMMAND ${RM} -r ${TARGETADDONDIR} )
 
 	# Create source distribution tarball.
 	SET( TARGETSOURCEDIR "${PROJECT_NAME}-Source-${VERSION}")

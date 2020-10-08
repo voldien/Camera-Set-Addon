@@ -1,11 +1,6 @@
-# <pep8 compliant>
 import bpy
 if "bpy" in locals():
 	import importlib
-
-	if "preset" in locals():
-		importlib.reload(preset)
-from . import preset
 
 from bpy.types import Panel, UIList
 from bpy.types import Operator
@@ -69,7 +64,7 @@ class SCENE_PT_cameraset(Panel, CameraSetPanel):
 		output_directory_layout = output_row_layout.row()
 		output_directory_layout.prop(
 			camera_sett, "use_default_output_directory", text="Use Default Output")
-		if camera_sett.use_default_output_directory == True:
+		if camera_sett.use_default_output_directory:
 			output_directory_layout.label(text=str.format("({})", context.scene.render.filepath))
 
 		layout.separator()
