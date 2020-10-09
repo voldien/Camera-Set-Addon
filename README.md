@@ -16,11 +16,24 @@ This utility addon was created because I was faced with the issue of having mult
 # Installation
 Download the [archieve](Release) zip file.
 
+Open up the preference window.
+
 ![Open Preference](images/_preference.jpg)
+
+Go to the Add-ons tab and press on the install button.
+
 ![Open Addon Install](images/_preference_install.jpg)
 
-
 # Examples
+
+Go to the scene setting tab.
+
+![Open ](images/_example_open_tab.jpg)
+
+
+Enable the camera set for the scene.
+
+![Enable](images/_example_enable.jpg)
 
 
 ## License
