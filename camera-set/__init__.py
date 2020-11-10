@@ -105,7 +105,6 @@ def register():
 
 	# Create menus.
 	if bpy.app.version >= (2, 80, 0):
-		bpy.types.RENDER_PT_render.append(menu_func_render)
 		bpy.types.TOPBAR_MT_render.append(menu_func_render)
 	else:
 		bpy.types.RENDER_PT_render.append(menu_func_render)
