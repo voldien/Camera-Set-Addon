@@ -24,6 +24,14 @@ Go to the Add-ons tab and press on the install button.
 
 ![Open Addon Install](images/_preference_install.jpg)
 
+Once added the zip file. Search with the keyword camera.
+
+![Search Addon](images/_search_addon.png)
+
+Enable the addon called 'Camera Render Set'
+
+![Enable Addon](images/_enable_addon.png)
+
 # Examples
 
 Go to the scene setting tab.
