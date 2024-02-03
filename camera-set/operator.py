@@ -16,7 +16,6 @@ if "bpy" in locals():
 
 from bpy.types import RenderSettings, ImageFormatSettings
 from bpy.app.handlers import persistent
-from threading import Thread
 
 class RenderCameraBase:
 	bl_option = {'REGISTER', 'UNDO'}
@@ -202,13 +201,7 @@ class RenderCameraSet(Operator):
 	def execute(self, context):
 		wm = bpy.context.window_manager
 		self.timer = wm.event_timer_add(0.5, window=context.window)
-		wm.modal_handler_add(self)
 
-		self.thread = Thread(target=self._run, args=(context,))
-		self.thread.start()
-		return {'RUNNING_MODAL'}
-
-	def _run(self, context):
 		wm = bpy.context.window_manager
 		window = bpy.context.window_manager.windows[0]
 
@@ -293,35 +286,8 @@ class RenderCameraSet(Operator):
 				total_time = time.time() - time_start
 				self.report({'INFO'}, str.format("Total time: {} seconds", str(total_time)))
 
-				#
-				bpy.ops.render.view_show('INVOKE_DEFAULT')
-
-	def modal(self, context, event):
-		wm = context.window_manager
-		# Stop the thread when ESCAPE is pressed.
-		if event.type == 'ESC':
-			self.cancel(context)
-			return {'CANCEL'}
-#			self.state = ParallelRenderState.CANCELLING
-#			self._report_progress()
-
-		if event.type == 'TIMER':
-			still_running = self.thread.is_alive()
-			#with self.summary_mutex:
-			#	percent = 4
-
-			if still_running:
-				wm.progress_update(10)
-				#self._report_progress()
-				return {'PASS_THROUGH'}
-
-			self.thread.join()
-			wm.event_timer_remove(self.timer)
-			wm.progress_end()
-			bpy.ops.render.view_show('INVOKE_DEFAULT')
-			return {'FINISHED'}
-		return {'PASS_THROUGH'}
-
+				bpy.ops.render.view_show('INVOKE_DEFAULT')		
+				return {'RUNNING_MODAL'}
 
 	def invoke(self, context, event):
 		wm = context.window_manager

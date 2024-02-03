@@ -77,11 +77,16 @@ class SCENE_PT_cameraset(Panel, CameraSetPanel):
 		                    camera_sett, "affected_settings_idx", rows=3)
 		col = row.column()
 		sub = col.column(align=True)
-		sub.operator("scene.render_camera_set_add", icon='ZOOMIN', text="")
-		sub.operator("scene.render_camera_set_remove", icon='ZOOMOUT', text="")
-		#col.prop(camera_sett, "use_single_layer", icon_only=True)
+
+		if bpy.app.version >= (4, 0, 2):
+			sub.operator("scene.render_camera_set_add", icon='ADD', text="")
+			sub.operator("scene.render_camera_set_remove", icon='TRASH', text="")
+			col = layout.split(factor=0.5)
+		else :
+			sub.operator("scene.render_camera_set_add", icon='ZOOMIN', text="")
+			sub.operator("scene.render_camera_set_remove", icon='ZOOMOUT', text="")
 		
-		col = layout.split(percentage=0.5)
+			col = layout.split(percentage=0.5)
 		col.operator("scene.render_camera_set_select", text="Add Selected Camera")
 		col.operator("scene.render_camera_set_deselect", text="Remove Selected Camera")
 
