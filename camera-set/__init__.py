@@ -1,14 +1,17 @@
 bl_info = {
 	"name": "Camera Render Set",
-	"author": "Valdemar Lindberg",
-	"version": (0, 1, 0),
-	"blender": (2, 79, 0),
+	"author": "Valdemar Lindberg, Co-Authored by Maurice Fernitz (Upgrade to blender 4.0)",
+	"version": (0, 2, 0),
+	"blender": (4, 0, 2),
 	"location": "Properties > Render",
 	"description": "A tool for creating a set of cameras that can be rendered in a single render command",
+	"support": "COMMUNITY",
+	"doc_url": "https://github.com/SevenOperation/Camera-Set-Addon",
 	"warning": "",
 	"wiki_url": "",
 	"category": "Render",
 }
+
 import bpy
 
 if "bpy" in locals():
@@ -45,15 +48,15 @@ class RenderCameraData(bpy.types.PropertyGroup):
 	def IsCameraObject(self, obj):
 		return obj.type == 'CAMERA'
 
-	name = StringProperty(name="name", default="", description="Name of the camera target.")
-	camera = PointerProperty(name="camera", type=bpy.types.Object,
+	name: StringProperty(name="name", default="", description="Name of the camera target.")
+	camera: PointerProperty(name="camera", type=bpy.types.Object,
 	                         description="Camera target object.", poll=IsCameraObject)  # ,
-	filepath = StringProperty(
+	filepath: StringProperty(
 		name="filepath", default='', subtype='FILE_PATH',
 		description="Relative filepath from the global output directory.")
 
-	enabled = BoolProperty(name="enabled", default=True, description="Target enabled for as a render target.")
-	affected_settings_idx = IntProperty()
+	enabled: BoolProperty(name="enabled", default=True, description="Target enabled for as a render target.")
+	affected_settings_idx: IntProperty()
 
 
 ## Future possible features ##
@@ -68,16 +71,15 @@ class RenderCameraData(bpy.types.PropertyGroup):
 
 class RenderCameraSetSceneSettings(bpy.types.PropertyGroup):
 	#
-	cameras = CollectionProperty(
-		type=RenderCameraData, name="cameras", description="")
-	affected_settings_idx = IntProperty()
-	output_directory = StringProperty(
+	cameras: CollectionProperty(type=RenderCameraData, name="cameras", description="")
+	affected_settings_idx: IntProperty()
+	output_directory: StringProperty(
 		name="Output Directory", description="", default="", subtype='DIR_PATH')
-	use_default_output_directory = BoolProperty(name="Use Default Output"
+	use_default_output_directory: BoolProperty(name="Use Default Output"
 	                                                 "Default Output",
 	                                            description="Use the directory specified in the Render section.",
 	                                            default=True)
-	enabled = BoolProperty(name="Enabled", description="", default=False)
+	enabled: BoolProperty(name="Enabled", description="", default=False)
 
 
 ## Future possible features ##
@@ -104,7 +106,10 @@ def register():
 	bpy.types.Scene.render_camera_set_settings = PointerProperty(type=RenderCameraSetSceneSettings)
 
 	# Create menus.
-	if bpy.app.version >= (2, 80, 0):
+	if bpy.app.version >= (4, 0, 0):
+		bpy.types.RENDER_PT_context.append(menu_func_render)
+		bpy.types.TOPBAR_MT_render.append(menu_func_render)
+	elif bpy.app.version >= (2, 80, 0):
 		bpy.types.RENDER_PT_render.append(menu_func_render)
 		bpy.types.TOPBAR_MT_render.append(menu_func_render)
 	else:
@@ -141,7 +146,10 @@ def unregister():
 	addon_keymaps.clear()
 
 	# Remove layouts.
-	if bpy.app.version >= (2, 80, 0):
+	if bpy.app.version >= (4, 0, 0):
+		bpy.types.RENDER_PT_context.remove(menu_func_render)
+		bpy.types.TOPBAR_MT_render.remove(menu_func_render)
+	elif bpy.app.version >= (2, 80, 0):
 		bpy.types.RENDER_PT_render.remove(menu_func_render)
 		bpy.types.TOPBAR_MT_render.remove(menu_func_render)
 	else:
